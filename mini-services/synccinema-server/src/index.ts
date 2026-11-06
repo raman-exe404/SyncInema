@@ -12,7 +12,7 @@ import { prisma } from "./config/supabase";
 
 const app = express();
 app.use(cors({ origin: env.corsOrigins, methods: ["GET", "POST"] }));
-app.use(express.json({ limit: "16kb" })); // payloads are tiny by design
+app.use(express.json({ limit: "16kb" }));
 app.use(authMiddleware);
 
 app.use("/api", healthRoutes);
@@ -24,16 +24,11 @@ app.use((_req, res) => {
 
 app.use(errorMiddleware);
 
-// REST listener (room validation, chat history fallback, health).
-const restServer = http.createServer(app);
-restServer.listen(env.restPort, () => {
-  console.log(`[synccinema-server] REST API listening on :${env.restPort}`);
-});
+// Single HTTP server — Express + Socket.IO on the same port.
+const httpServer = http.createServer(app);
 
-// Real-time listener: Socket.IO serves at path "/" so the sandbox gateway
-// (Caddy) can forward via the XTransformPort query parameter.
-const io = new SocketServer<ClientToServerEvents, ServerToClientEvents>(env.port, {
-  path: "/",
+const io = new SocketServer<ClientToServerEvents, ServerToClientEvents>(httpServer, {
+  path: "/socket.io",
   cors: { origin: env.corsOrigins, methods: ["GET", "POST"] },
   pingInterval: 25_000,
   pingTimeout: 60_000,
@@ -41,13 +36,18 @@ const io = new SocketServer<ClientToServerEvents, ServerToClientEvents>(env.port
 
 registerSocketHandlers(io);
 
-console.log(`[synccinema-server] Socket.IO listening on :${env.port} (${env.nodeEnv})`);
-console.log("[synccinema-server] movie files are never uploaded — control + chat only");
+const port = env.port; // use PORT env var (Render sets this automatically)
+
+httpServer.listen(port, () => {
+  console.log(`[synccinema-server] listening on :${port} (REST + Socket.IO)`);
+  console.log(`[synccinema-server] env: ${env.nodeEnv}`);
+  console.log("[synccinema-server] movie files are never uploaded — control + chat only");
+});
 
 async function shutdown() {
   console.log("[synccinema-server] shutting down…");
   io.close();
-  restServer.close();
+  httpServer.close();
   await prisma.$disconnect().catch(() => undefined);
   process.exit(0);
 }

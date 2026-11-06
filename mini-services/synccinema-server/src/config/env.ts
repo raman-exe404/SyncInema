@@ -1,10 +1,8 @@
 // Central runtime configuration. Secrets come from env vars only — never hardcoded.
 
 export const env = {
-  /** Socket.IO port (path "/", forwarded by the gateway via XTransformPort). */
+  /** Single port — Express REST + Socket.IO share one http.Server (required by Render). */
   port: Number(process.env.PORT ?? 3003),
-  /** Express REST port (gateway forward via XTransformPort on /api/*). */
-  restPort: Number(process.env.REST_PORT ?? 3004),
   nodeEnv: process.env.NODE_ENV ?? "development",
   corsOrigins: process.env.CORS_ORIGINS ?? "*",
   /** Supabase service connection (production). When absent the server runs

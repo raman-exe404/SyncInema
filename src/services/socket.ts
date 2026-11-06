@@ -94,8 +94,9 @@ export function connect(next: SocketListeners): Socket {
   if (socket) return socket;
 
   const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL ?? "/?XTransformPort=3003";
+  const socketPath = process.env.NEXT_PUBLIC_SOCKET_URL ? "/socket.io" : "/";
   socket = io(socketUrl, {
-    path: "/",
+    path: socketPath,
     transports: ["websocket", "polling"],
     reconnection: true,
     reconnectionAttempts: Infinity,
