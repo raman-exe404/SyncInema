@@ -32,8 +32,8 @@ export function computeCompatibility(room: ServerRoom): RoomSnapshot["compatibil
   const participants = [...room.participants.values()];
   if (participants.length < MAX_PARTICIPANTS) return "PENDING";
   if (participants.some((p) => !p.movie)) return "MISSING";
-  const hashes = new Set(participants.map((p) => p.movie!.hash));
-  return hashes.size === 1 ? "MATCH" : "MISMATCH";
+  // Hash check removed — users may have different encodes of the same movie.
+  return "MATCH";
 }
 
 export function buildSnapshot(room: ServerRoom): RoomSnapshot {

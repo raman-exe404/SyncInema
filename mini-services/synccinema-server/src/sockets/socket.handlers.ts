@@ -186,13 +186,6 @@ export function registerSocketHandlers(io: IO) {
       if (process.env.DEBUG_SYNC === "1") {
         console.log(`[sync-debug] PLAY_REQUEST room=${room.roomCode} user=${joinedUserId} pos=${parsed.data.positionMs} timelineBefore=${JSON.stringify(room.timeline)}`);
       }
-      if (computeCompatibility(room) !== "MATCH") {
-        socket.emit("ROOM_ERROR", {
-          code: "PLAYBACK_CONFLICT",
-          message: "Both participants must be ready with matching movies before playback.",
-        });
-        return;
-      }
       countIn(room, payload);
       const now = Date.now();
       const startAtServerMs = now + START_BUFFER_MS;
