@@ -1,0 +1,17 @@
+{
+  "name": "SyncCinema — Watch Together",
+  "short_name": "SyncCinema",
+  "description": "Two cities. One movie. Synchronised playback of your own local files with real-time chat. The movie never leaves your device.",
+  "id": "/",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#07070b",
+  "theme_color": "#07070b",
+  "categories": ["entertainment", "social"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

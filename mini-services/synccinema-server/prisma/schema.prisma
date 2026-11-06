@@ -1,0 +1,61 @@
+// SyncCinema persistence schema.
+// Local sandbox uses SQLite; the production Supabase PostgreSQL equivalent
+// (identical tables + RLS policies) ships in supabase/schema.sql at repo root.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../db/synccinema.db"
+}
+
+model Room {
+  id             String   @id @default(cuid())
+  roomCode       String   @unique
+  hostId         String
+  status         String   @default("WAITING") // WAITING | ACTIVE | ENDED | EXPIRED
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now())
+  expiresAt      DateTime
+  participants   RoomParticipant[]
+  messages       Message[]
+
+  @@index([roomCode])
+  @@index([status, expiresAt])
+}
+
+model RoomParticipant {
+  id           String   @id @default(cuid())
+  roomId       String
+  room         Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId       String
+  displayName  String
+  isHost       Boolean  @default(false)
+  isReady      Boolean  @default(false)
+  movieName    String?
+  movieHash    String?
+  movieSize    Int?
+  movieMime    String?
+  movieDurMs   Int?
+  joinedAt     DateTime @default(now())
+  lastSeenAt   DateTime @default(now())
+
+  @@unique([roomId, userId])
+  @@index([roomId])
+}
+
+model Message {
+  id              String   @id @default(cuid())
+  roomId          String
+  room            Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  senderId        String
+  senderName      String
+  messageText     String
+  messageType     String   @default("TEXT") // TEXT | REACTION | SYSTEM
+  moviePositionMs Int?
+  createdAt       DateTime @default(now())
+
+  @@index([roomId, createdAt])
+}
