@@ -93,7 +93,8 @@ export function connect(next: SocketListeners): Socket {
   listeners = next;
   if (socket) return socket;
 
-  socket = io("/?XTransformPort=3003", {
+  const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL ?? "/?XTransformPort=3003";
+  socket = io(socketUrl, {
     path: "/",
     transports: ["websocket", "polling"],
     reconnection: true,

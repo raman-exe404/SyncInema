@@ -8,7 +8,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:../db/synccinema.db"
+  url      = env("DATABASE_URL")
 }
 
 model Room {

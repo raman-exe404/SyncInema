@@ -1,11 +1,14 @@
-// REST client. All requests go through the sandbox gateway using the
-// XTransformPort query parameter — never absolute URLs or explicit ports.
+// REST client. In production, NEXT_PUBLIC_REST_URL points to the Render backend.
+// Without it, requests fall back to the sandbox gateway using XTransformPort.
 
+const REST_BASE = process.env.NEXT_PUBLIC_REST_URL ?? "";
 const REST_PORT = 3004;
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const sep = path.includes("?") ? "&" : "?";
-  const res = await fetch(`${path}${sep}XTransformPort=${REST_PORT}`, {
+  const url = REST_BASE
+    ? `${REST_BASE}${path}`
+    : (() => { const sep = path.includes("?") ? "&" : "?"; return `${path}${sep}XTransformPort=${REST_PORT}`; })();
+  const res = await fetch(url, {
     ...init,
     headers: { "content-type": "application/json", ...(init?.headers ?? {}) },
   });
