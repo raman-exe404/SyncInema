@@ -152,7 +152,6 @@ export function MovieVideoElement({
       src={objectUrl ?? undefined}
       className="h-full w-full bg-black object-contain"
       playsInline
-      muted
       preload="auto"
       onLoadedMetadata={(e) => {
         const el = e.currentTarget;

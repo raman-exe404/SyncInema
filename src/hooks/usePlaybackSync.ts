@@ -188,7 +188,11 @@ class PlaybackSyncEngine {
     const expected = this.expectedPositionMs() / 1000;
     if (t.playing) {
       if (Math.abs(v.currentTime - expected) > 0.25) v.currentTime = expected;
-      void v.play().catch(() => undefined);
+      v.muted = false;
+      void v.play().catch(() => {
+        v.muted = true;
+        void v.play().catch(() => undefined);
+      });
     } else {
       v.pause();
       if (Math.abs(v.currentTime - expected) > 0.25) v.currentTime = expected;
@@ -209,7 +213,14 @@ class PlaybackSyncEngine {
       const lateMs = -delayMs;
       v.playbackRate = 1;
       v.currentTime = Math.max(0, (positionMs + lateMs) / 1000);
-      if (autoplay) void v.play().catch(() => undefined);
+      if (autoplay) {
+        v.muted = false;
+        void v.play().catch(() => {
+          // Autoplay blocked by browser — mute and retry (sound lost but video plays).
+          v.muted = true;
+          void v.play().catch(() => undefined);
+        });
+      }
       return;
     }
 
@@ -223,8 +234,11 @@ class PlaybackSyncEngine {
     this.startTimer = setTimeout(() => {
       v.playbackRate = 1;
       if (autoplay) {
+        v.muted = false;
         void v.play().catch(() => {
-          // Autoplay blocked: surfaced by UI ("tap to start audio/video").
+          // Autoplay blocked by browser — mute and retry so video at least plays.
+          v.muted = true;
+          void v.play().catch(() => undefined);
         });
       }
     }, delayMs);
