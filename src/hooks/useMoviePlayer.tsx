@@ -24,6 +24,7 @@ export interface LocalPlayerState {
 export function useMoviePlayer(objectUrl: string | null) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const unmutedRef = useRef(false);
   const [state, setState] = useState<LocalPlayerState>({
     playing: false,
     currentTimeMs: 0,
@@ -86,6 +87,12 @@ export function useMoviePlayer(objectUrl: string | null) {
   const togglePlay = useCallback(() => {
     const v = videoRef.current;
     if (!v) return;
+    // Unmute on first intentional user interaction — browsers block unmuted autoplay.
+    if (!unmutedRef.current) {
+      v.muted = false;
+      v.volume = 1;
+      unmutedRef.current = true;
+    }
     if (v.paused) {
       emitSafe("PLAY_REQUEST", { positionMs: Math.round(v.currentTime * 1000) });
     } else {
@@ -145,6 +152,7 @@ export function MovieVideoElement({
       src={objectUrl ?? undefined}
       className="h-full w-full bg-black object-contain"
       playsInline
+      muted
       preload="auto"
       onLoadedMetadata={(e) => {
         const el = e.currentTarget;
